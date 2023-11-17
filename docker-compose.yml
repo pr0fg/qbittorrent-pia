@@ -7,10 +7,10 @@ services:
     restart: unless-stopped
     environment:
       - TZ=America/Toronto
-      - VPN_REGION=
-      - VPN_USERNAME=
-      - VPN_PASSWORD=
-      - LAN_NETWORK=
+      - VPN_REGION=${VPN_REGION}
+      - VPN_USERNAME=${VPN_USERNAME}
+      - VPN_PASSWORD=${VPN_PASSWORD}
+      - LAN_NETWORK=${LAN_NETWORK}
     volumes:
       - qbittorrent-config:/config
       - qbittorrent-downloads:/downloads

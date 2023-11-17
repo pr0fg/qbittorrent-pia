@@ -15,6 +15,45 @@ Docker container that runs the latest [qBittorrent](https://github.com/qbittorre
 * Auto checks VPN health every 15 seconds
 * Simplified configuation options
 
+# Pulling the Image
+`docker image pull ghcr.io/pr0fg/qbittorrent-pia`
+
+# Running via Docker CLI
+**Note:** Add volumes to this command as needed.
+`docker run -it --rm --cap-add=NET_ADMIN --device=/dev/net/tun --sysctl net.ipv4.conf.all.src_valid_mark=1 -e VPN_REGION=ca_toronto -e VPN_USERNAME=pXXXXXXX -e VPN_PASSWORD=XXXXXXX -e LAN_NETWORK=192.168.1.0/24 -p 8080:8080/tcp qbittorrent-pia`
+
+# Running via Docker Compose
+```
+version: '3'
+
+services:
+
+  qbittorrent:
+    build: ./qbittorrent-pia
+    restart: unless-stopped
+    environment:
+      - TZ=America/Toronto
+      - VPN_REGION=${VPN_REGION}
+      - VPN_USERNAME=${VPN_USERNAME}
+      - VPN_PASSWORD=${VPN_PASSWORD}
+      - LAN_NETWORK=${LAN_NETWORK}
+    volumes:
+      - qbittorrent-config:/config
+      - qbittorrent-downloads:/downloads
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    ports:
+      - 8080:8080
+
+volumes:
+  qbittorrent-config:
+  qbittorrent-downloads:
+```
+
 # Variables, Volumes, and Ports
 ## Environment Variables
 | Variable | Required | Function | Example |
