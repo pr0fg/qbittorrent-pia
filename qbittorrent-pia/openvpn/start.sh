@@ -161,4 +161,4 @@ done
 env | grep -P '(VPN_|LAN_NETWORK|NAME_SERVERS)' > /tmp/env
 
 echo "[INFO] Starting OpenVPN..." | ts '%Y-%m-%d %H:%M:%.S'
-exec openvpn --pull-filter ignore route-ipv6 --pull-filter ignore ifconfig-ipv6 --config "${VPN_CONFIG}" --script-security 2 --up /etc/openvpn/iptables.sh
+exec openvpn --pull-filter ignore route-ipv6 --pull-filter ignore ifconfig-ipv6 --config "${VPN_CONFIG}" --script-security 2 --up /etc/openvpn/iptables.sh --down 'kill 1'
