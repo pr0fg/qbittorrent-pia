@@ -50,26 +50,6 @@ echo "${VPN_USERNAME}" > /etc/openvpn/credentials.conf
 echo "${VPN_PASSWORD}" >> /etc/openvpn/credentials.conf
 echo "auth-user-pass /etc/openvpn/credentials.conf" >> "${VPN_CONFIG}"
 
-set +e
-
-user_exists=$(cat "${VPN_CONFIG}" | grep -m 1 'user ')
-if [[ ! -z "${user_exists}" ]]; then
-    LINE_NUM=$(grep -Fn -m 1 'user ' "${VPN_CONFIG}" | cut -d: -f 1)
-    sed -i "${LINE_NUM}s/.*/user nobody/" "${VPN_CONFIG}"
-else
-    echo "user nobody" >> "${VPN_CONFIG}"
-fi
-
-group_exists=$(cat "${VPN_CONFIG}" | grep -m 1 'group ')
-if [[ ! -z "${group_exists}" ]]; then
-    LINE_NUM=$(grep -Fn -m 1 'group ' "${VPN_CONFIG}" | cut -d: -f 1)
-    sed -i "${LINE_NUM}s/.*/group nogroup/" "${VPN_CONFIG}"
-else
-    echo "group nogroup" >> "${VPN_CONFIG}"
-fi
-
-set -e
-
 export vpn_remote_line=$(cat "${VPN_CONFIG}" | grep -P -o -m 1 '(?<=^remote\s)[^\n\r]+' | sed -e 's~^[ \t]*~~;s~[ \t]*$~~')
 if [[ ! -z "${vpn_remote_line}" ]]; then
     echo "[INFO] VPN remote line defined as '${vpn_remote_line}'" | ts '%Y-%m-%d %H:%M:%.S'
@@ -161,4 +141,4 @@ done
 env | grep -P '(VPN_|LAN_NETWORK|NAME_SERVERS)' > /tmp/env
 
 echo "[INFO] Starting OpenVPN..." | ts '%Y-%m-%d %H:%M:%.S'
-exec openvpn --pull-filter ignore route-ipv6 --pull-filter ignore ifconfig-ipv6 --config "${VPN_CONFIG}" --script-security 2 --up /etc/openvpn/iptables.sh --down '/usr/bin/kill 1'
+exec openvpn --pull-filter ignore route-ipv6 --pull-filter ignore ifconfig-ipv6 --config "${VPN_CONFIG}" --user nobody --group nogroup --script-security 2 --up /etc/openvpn/iptables.sh --down /etc/openvpn/stop.sh --persist-tun --persist-key
