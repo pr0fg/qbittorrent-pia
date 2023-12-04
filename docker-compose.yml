@@ -11,6 +11,10 @@ services:
       - VPN_USERNAME=${VPN_USERNAME}
       - VPN_PASSWORD=${VPN_PASSWORD}
       - LAN_NETWORK=${LAN_NETWORK}
+      - NAME_SERVERS=
+      - HEALTHCHECK_INTERVAL=
+      - HEALTHCHECK_DNS_HOST=
+      - HEALTHCHECK_PING_IP=
     volumes:
       - qbittorrent-config:/config
       - qbittorrent-downloads:/downloads

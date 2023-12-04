@@ -2,17 +2,19 @@
 
 Forked and modified from [DyonR/docker-qbittorrentvpn](https://github.com/DyonR/docker-qbittorrentvpn).
 
-Docker container that runs the latest [qBittorrent](https://github.com/qbittorrent/qBittorrent)-nox client while connecting to Private Internet Access (PIA) via OpenVPN. Includes iptables killswitch, DNS nameserver overrides, and IPv6 blocking to prevent IP leakage when the tunnel goes down. Drops all permissions and supports x86 & ARM.
+Docker container that runs the latest [qBittorrent](https://github.com/qbittorrent/qBittorrent)-nox client and forwards all traffic through Private Internet Access (PIA) via OpenVPN. Supports both x86 & ARM.
+
+The base image [pia-docker-base](https://github.com/pr0fg/pia-docker-base) is based on Debian bookworm-slim and includes an iptables killswitch, DNS nameserver overrides, and IPv6 blocking to prevent IP leakage when the tunnel goes down. If OpenVPN fails to reconnect or has a fault, the container will automatically kill itself. All permissions are dropped where possible. A healthcheck script is also included that monitors network connectivity and the health of spawned processes.  
 
 # Docker Features
-* Base: Debian bookworm-slim (**supports ARM**)
+* Base: [pia-docker-base](https://github.com/pr0fg/pia-docker-base) (Debian bookworm-slim, **supports x86 & ARM**)
 * [qBittorrent](https://github.com/qbittorrent/qBittorrent) with modern [VueTorrent](https://github.com/WDaan/VueTorrent) frontend
 * Automatically connects to Private Internet Access (PIA) using OpenVPN
 * IP tables killswitch to prevent IP leaking when VPN connection fails
 * DNS overrides to avoid DNS leakage
 * Blocks IPv6 to avoid leakage
 * Drops all permissions where possible
-* Auto checks VPN health every 15 seconds
+* Auto checks VPN and squid health every 10 seconds, with configurable health checks
 * Simplified configuation options
 
 # Pulling the Image
@@ -37,6 +39,10 @@ services:
       - VPN_USERNAME=${VPN_USERNAME}
       - VPN_PASSWORD=${VPN_PASSWORD}
       - LAN_NETWORK=${LAN_NETWORK}
+      - NAME_SERVERS=
+      - HEALTHCHECK_INTERVAL=
+      - HEALTHCHECK_DNS_HOST=
+      - HEALTHCHECK_PING_IP=
     volumes:
       - qbittorrent-config:/config
       - qbittorrent-downloads:/downloads
@@ -47,7 +53,7 @@ services:
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
     ports:
-      - 8080:8080
+      - 127.0.0.1:8080:8080
 
 volumes:
   qbittorrent-config:
@@ -56,14 +62,17 @@ volumes:
 
 # Variables, Volumes, and Ports
 ## Environment Variables
-| Variable | Required | Function | Example |
-|----------|----------|----------|----------|
+| Variable | Required | Function | Example | Default |
+|----------|----------|----------|---------|---------|
 |`VPN_REGION`| Yes | PIA VPN Region | `VPN_REGION=ca_toronto`||
 |`VPN_USERNAME`| Yes | PIA username | `VPN_USERNAME=pXXXXXX`||
 |`VPN_PASSWORD`| Yes | PIA password | `VPN_PASSWORD=XXXXXXX`||
 |`LAN_NETWORK`| Yes | Local network with CIDR notation | `LAN_NETWORK=192.168.1.0/24`||
-|`NAME_SERVERS`| No | Comma delimited name servers |`NAME_SERVERS=1.1.1.1,1.0.0.1`|`1.1.1.1,1.0.0.1`||
-|`TZ`| No | Timezone |`TZ=America/Toronto`||
+|`TZ`| No | Timezone |`TZ=America/Toronto`| System default |
+|`NAME_SERVERS`| No | Comma delimited name servers |`NAME_SERVERS=1.1.1.1,1.0.0.1`| 1.1.1.1,8.8.8.8,1.0.0.1,8.8.4.4 |
+|`HEALTHCHECK_INTERVAL`| No | Seconds between health checks |`HEALTHCHECK_INTERVAL=30`| 10 seconds |
+|`HEALTHCHECK_DNS_HOST`| No | DNS health check host |`HEALTHCHECK_DNS_HOST=abc.com`| google.com |
+|`HEALTHCHECK_PING_IP`| No | Ping health check IP |`HEALTHCHECK_PING_IP=1.2.3.4`| 8.8.8.8 |
 
 `LAN_NETWORK` is required to ensure packets from qBittorrent can return to their source.
 

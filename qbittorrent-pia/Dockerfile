@@ -1,33 +1,10 @@
-FROM debian:bookworm-slim
+FROM ghcr.io/pr0fg/pia-docker-base:latest
 
 WORKDIR /opt
 
-# Make directories
-RUN mkdir -p /etc/openvpn /etc/qBittorrent
-RUN mkdir -p /downloads /config/qBittorrent
-
-# Install
+# Install dependencies
 RUN apt update \
-    && apt install -y --no-install-recommends \
-    curl \
-    ca-certificates \
-    dnsutils \
-    git \
-    inetutils-ping \
-    ipcalc \
-    iproute2 \
-    iptables \
-    kmod \
-    moreutils \
-    net-tools \
-    openresolv \
-    openvpn \
-    procps \
-    python3 \
-    qbittorrent-nox \
-    runit \
-    tzdata \
-    unzip \
+    && apt install -y --no-install-recommends qbittorrent-nox git runit \
     && apt-get clean \
     && apt --purge autoremove -y \
     && rm -rf \
@@ -35,26 +12,23 @@ RUN apt update \
     /tmp/* \
     /var/tmp/*
 
-RUN rm -rf /etc/openvpn/*
-RUN rm -rf /etc/qBittorrent/*
-
 # Configs
-ADD openvpn/ /etc/openvpn/
+RUN rm -rf /etc/qBittorrent/*
 ADD qBittorrent/ /etc/qBittorrent/
 
-# PIA
-RUN curl https://www.privateinternetaccess.com/openvpn/openvpn.zip --output /tmp/configs.zip && unzip /tmp/configs.zip -d /etc/openvpn/configs && rm /tmp/configs.zip
-
-# qBittorrent
+# Setup qBittorrent + VueTorrent
 RUN useradd -c "qbittorrent user" -U qbittorrent
 RUN cd /etc/qBittorrent && git clone --single-branch --branch latest-release https://github.com/WDaan/VueTorrent.git
 
-# Runners
-RUN chmod +x /etc/openvpn/*.sh
-RUN chmod +x /etc/qBittorrent/*.sh
+# Make directories
+RUN mkdir -p /downloads /config/qBittorrent
+
+# Entrypoint
+ADD entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+
+# Health check env
+ENV HEALTHCHECK_PROCESS_NAME=qbittorrent-nox
 
 VOLUME ["/downloads", "/config"]
-
 EXPOSE 8080
-
-CMD ["/bin/bash", "/etc/openvpn/start.sh"]
