@@ -3,6 +3,8 @@
 
 set -e
 
+echo "[INFO] Starting..."
+
 check_network=$(ifconfig | grep docker0 || true)
 if [[ ! -z "${check_network}" ]]; then
     echo "[ERROR] Network type detected as 'Host', this will cause major issues! Exiting..." | ts '%Y-%m-%d %H:%M:%.S'
