@@ -14,7 +14,7 @@ The base image [pia-docker-base](https://github.com/pr0fg/pia-docker-base) is ba
 * DNS overrides to avoid DNS leakage
 * Blocks IPv6 to avoid leakage
 * Drops all permissions where possible
-* Auto checks VPN and squid health every 10 seconds, with configurable health checks
+* Auto checks VPN and qBittorrent health every 10 seconds, with configurable health checks
 * Simplified configuation options
 
 # Pulling the Image
@@ -74,7 +74,7 @@ volumes:
 |`HEALTHCHECK_DNS_HOST`| No | DNS health check host |`HEALTHCHECK_DNS_HOST=abc.com`| google.com |
 |`HEALTHCHECK_PING_IP`| No | Ping health check IP |`HEALTHCHECK_PING_IP=1.2.3.4`| 8.8.8.8 |
 
-`LAN_NETWORK` is required to ensure packets from qBittorrent can return to their source.
+`LAN_NETWORK` is required to ensure packets can return to their source.
 
 ## Volumes
 | Volume | Required | Function | Example |
