@@ -4,7 +4,7 @@ WORKDIR /opt
 
 # Install dependencies
 RUN apt update \
-    && apt install -y --no-install-recommends qbittorrent-nox git runit \
+    && apt install -y --no-install-recommends qbittorrent-nox python3 git runit \
     && apt-get clean \
     && apt --purge autoremove -y \
     && rm -rf \
